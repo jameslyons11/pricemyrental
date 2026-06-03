@@ -94,6 +94,21 @@
     .verdict-card p { font-size: 15px; color: #065f46; line-height: 1.6; }
     .btn-new { width: 100%; background: transparent; color: var(--green); border: 2px solid var(--green); padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; transition: background 0.2s; }
     .btn-new:hover { background: var(--green-light); }
+    .btn-clear {
+      width: 100%;
+      margin-top: 8px;
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-clear:hover { color: var(--slate); border-color: var(--slate); }
   </style>
 </head>
 <body>
@@ -162,6 +177,7 @@
     <button class="btn-submit" id="submitBtn" onclick="getEstimate()">
       <span id="btnText">Get My Pricing Report &#8594;</span>
     </button>
+    <button class="btn-clear" onclick="clearForm()">&#x2715; Clear</button>
   </div>
   <div class="loading" id="loading">
     <div class="spinner"></div>
@@ -309,6 +325,18 @@
   function hideResults() { document.getElementById('results').classList.remove('visible'); }
   function resetForm() { hideResults(); hideError(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
   document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.activeElement.tagName === 'INPUT') getEstimate(); });
+
+  function clearForm() {
+    document.getElementById('address').value = '';
+    document.getElementById('bedrooms').value = '2';
+    document.getElementById('bathrooms').value = '2';
+    document.getElementById('propertyType').value = '';
+    document.getElementById('sqft').value = '';
+    document.getElementById('currentRent').value = '';
+    hideResults();
+    hideError();
+    document.getElementById('address').focus();
+  }
 </script>
 </body>
 </html>
