@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>PriceMyRental – Know Exactly What to Charge</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0f172a;
+      --slate: #334155;
+      --muted: #94a3b8;
+      --light: #f1f5f9;
+      --white: #fff;
+      --green: #059669;
+      --green-dark: #047857;
+      --green-light: #ecfdf5;
+      --green-mid: #d1fae5;
+      --red: #ef4444;
+      --red-light: #fef2f2;
+      --amber: #f59e0b;
+      --border: #e2e8f0;
+      --radius: 12px;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--light); color: var(--navy); min-height: 100vh; }
+    nav { background: var(--white); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .logo { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo span { color: var(--green); }
+    .nav-tag { background: var(--green-light); color: var(--green); font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 100px; border: 1px solid var(--green-mid); }
+    main { max-width: 680px; margin: 0 auto; padding: 40px 24px 80px; }
+    .page-header { text-align: center; margin-bottom: 36px; }
+    .page-header h1 { font-size: clamp(26px, 4vw, 36px); font-weight: 800; letter-spacing: -1px; margin-bottom: 10px; }
+    .page-header p { color: var(--muted); font-size: 17px; }
+    .form-card { background: var(--white); border-radius: 16px; padding: 32px; box-shadow: 0 2px 16px rgba(0,0,0,0.07); border: 1px solid var(--border); }
+    .form-card h2 { font-size: 16px; font-weight: 700; color: var(--slate); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    .form-row { margin-bottom: 16px; }
+    .form-row label { display: block; font-size: 13px; font-weight: 600; color: var(--slate); margin-bottom: 6px; }
+    .form-row input, .form-row select { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 15px; font-family: inherit; color: var(--navy); background: var(--white); outline: none; transition: border-color 0.15s; }
+    .form-row input:focus, .form-row select:focus { border-color: var(--green); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+    .btn-submit { width: 100%; margin-top: 8px; background: var(--green); color: white; border: none; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; transition: background 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-submit:hover:not(:disabled) { background: var(--green-dark); transform: translateY(-1px); }
+    .btn-submit:disabled { background: var(--muted); cursor: not-allowed; transform: none; }
+    .loading { display: none; text-align: center; padding: 48px 24px; background: var(--white); border-radius: 16px; border: 1px solid var(--border); margin-top: 24px; }
+    .loading.visible { display: block; }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--green-mid); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading p { color: var(--muted); font-size: 15px; }
+    .error-box { display: none; background: var(--red-light); border: 1.5px solid #fecaca; border-radius: 12px; padding: 16px 20px; margin-top: 24px; font-size: 14px; color: #b91c1c; }
+    .error-box.visible { display: block; }
+    #results { display: none; margin-top: 24px; }
+    #results.visible { display: block; }
+    .summary-card { background: linear-gradient(135deg, #052e16, #064e3b); border-radius: 16px; padding: 28px 28px 24px; color: white; margin-bottom: 16px; }
+    .summary-label { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #6ee7b7; margin-bottom: 4px; }
+    .summary-address { font-size: 16px; font-weight: 600; color: white; margin-bottom: 24px; opacity: 0.9; }
+    .summary-numbers { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    @media (max-width: 480px) { .summary-numbers { grid-template-columns: 1fr 1fr; } }
+    .summary-num .lbl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #6ee7b7; margin-bottom: 4px; }
+    .summary-num .val { font-size: 28px; font-weight: 800; letter-spacing: -1px; color: white; }
+    .summary-num .val.green { color: #34d399; }
+    .summary-num .val.small { font-size: 20px; }
+    .upside-bar { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
+    .upside-bar .up-icon { font-size: 22px; }
+    .upside-bar .up-text { font-size: 15px; font-weight: 700; color: #34d399; }
+    .upside-bar .up-sub { font-size: 13px; color: #a7f3d0; margin-top: 2px; opacity: 0.8; }
+    .range-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 24px 28px; margin-bottom: 16px; }
+    .range-card h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 16px; }
+    .range-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .range-label { font-size: 14px; color: var(--slate); width: 70px; flex-shrink: 0; }
+    .range-bar-wrap { flex: 1; height: 8px; background: var(--light); border-radius: 100px; overflow: hidden; }
+    .range-bar { height: 100%; border-radius: 100px; background: var(--green); }
+    .range-bar.low { background: #fbbf24; }
+    .range-bar.high { background: #3b82f6; }
+    .range-val { font-size: 15px; font-weight: 700; color: var(--navy); width: 72px; text-align: right; flex-shrink: 0; }
+    .comps-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 24px 28px; margin-bottom: 16px; }
+    .comps-card h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 16px; }
+    .comp-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--light); gap: 12px; }
+    .comp-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .comp-left { flex: 1; min-width: 0; }
+    .comp-address { font-size: 14px; font-weight: 600; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .comp-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .comp-right { text-align: right; flex-shrink: 0; }
+    .comp-price { font-size: 16px; font-weight: 700; color: var(--navy); }
+    .comp-distance { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .comp-badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 100px; display: inline-block; margin-top: 4px; }
+    .badge-above { background: #fef3c7; color: #92400e; }
+    .badge-below { background: var(--green-light); color: var(--green-dark); }
+    .badge-match { background: #eff6ff; color: #1d4ed8; }
+    .verdict-card { background: var(--green-light); border: 1.5px solid var(--green-mid); border-radius: 16px; padding: 24px 28px; margin-bottom: 16px; }
+    .verdict-card h3 { font-size: 15px; font-weight: 700; color: var(--green-dark); margin-bottom: 8px; }
+    .verdict-card p { font-size: 15px; color: #065f46; line-height: 1.6; }
+    .btn-new { width: 100%; background: transparent; color: var(--green); border: 2px solid var(--green); padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; transition: background 0.2s; }
+    .btn-new:hover { background: var(--green-light); }
+  </style>
+</head>
+<body>
+<nav>
+  <div class="logo">Price<span>MyRental</span></div>
+  <div class="nav-tag">Beta</div>
+</nav>
+<main>
+  <div class="page-header">
+    <h1>What Should You Be Charging?</h1>
+    <p>Enter your property details and get a market rate report in seconds.</p>
+  </div>
+  <div class="form-card" id="formCard">
+    <h2>&#127968; Your Property</h2>
+    <div class="form-row">
+      <label for="address">Full Address <span style="color:#ef4444">*</span></label>
+      <input type="text" id="address" placeholder="e.g. 342 Maple St, Austin, TX 78701" autocomplete="street-address">
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label for="bedrooms">Bedrooms</label>
+        <select id="bedrooms">
+          <option value="">Select</option>
+          <option value="0">Studio</option>
+          <option value="1">1 Bedroom</option>
+          <option value="2" selected>2 Bedrooms</option>
+          <option value="3">3 Bedrooms</option>
+          <option value="4">4 Bedrooms</option>
+          <option value="5">5+ Bedrooms</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="bathrooms">Bathrooms</label>
+        <select id="bathrooms">
+          <option value="">Select</option>
+          <option value="1">1 Bath</option>
+          <option value="1.5">1.5 Baths</option>
+          <option value="2" selected>2 Baths</option>
+          <option value="2.5">2.5 Baths</option>
+          <option value="3">3 Baths</option>
+          <option value="3.5">3.5 Baths</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label for="propertyType">Property Type</label>
+        <select id="propertyType">
+          <option value="">Any</option>
+          <option value="Single Family">Single Family</option>
+          <option value="Condo">Condo</option>
+          <option value="Townhouse">Townhouse</option>
+          <option value="Apartment">Apartment</option>
+          <option value="Multi-Family">Multi-Family</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="sqft">Square Footage (optional)</label>
+        <input type="number" id="sqft" placeholder="e.g. 1100" min="100" max="10000">
+      </div>
+    </div>
+    <div class="form-row">
+      <label for="currentRent">Your Current Rent (optional)</label>
+      <input type="number" id="currentRent" placeholder="e.g. 1450" min="0">
+    </div>
+    <button class="btn-submit" id="submitBtn" onclick="getEstimate()">
+      <span id="btnText">Get My Pricing Report &#8594;</span>
+    </button>
+  </div>
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Analyzing comparable listings in your area&#8230;</p>
+  </div>
+  <div class="error-box" id="errorBox"></div>
+  <div id="results">
+    <div class="summary-card">
+      <div class="summary-label">Pricing Report</div>
+      <div class="summary-address" id="reportAddress"></div>
+      <div class="summary-numbers">
+        <div class="summary-num">
+          <div class="lbl">Estimated Rent</div>
+          <div class="val green" id="reportRent">&#8212;</div>
+        </div>
+        <div class="summary-num" id="upsideBlock">
+          <div class="lbl">Your Upside</div>
+          <div class="val green small" id="reportUpside">&#8212;</div>
+        </div>
+        <div class="summary-num">
+          <div class="lbl">Comps Found</div>
+          <div class="val small" id="reportComps">&#8212;</div>
+        </div>
+      </div>
+      <div class="upside-bar" id="upsideBar" style="display:none">
+        <div class="up-icon">&#128176;</div>
+        <div>
+          <div class="up-text" id="upsideBarText"></div>
+          <div class="up-sub" id="upsideBarSub"></div>
+        </div>
+      </div>
+    </div>
+    <div class="range-card">
+      <h3>Rent Range</h3>
+      <div class="range-row">
+        <span class="range-label">Low</span>
+        <div class="range-bar-wrap"><div class="range-bar low" id="rangeLow" style="width:60%"></div></div>
+        <span class="range-val" id="rangeLowVal">&#8212;</span>
+      </div>
+      <div class="range-row">
+        <span class="range-label">Estimate</span>
+        <div class="range-bar-wrap"><div class="range-bar" id="rangeMid" style="width:80%"></div></div>
+        <span class="range-val" id="rangeMidVal">&#8212;</span>
+      </div>
+      <div class="range-row">
+        <span class="range-label">High</span>
+        <div class="range-bar-wrap"><div class="range-bar high" id="rangeHigh" style="width:100%"></div></div>
+        <span class="range-val" id="rangeHighVal">&#8212;</span>
+      </div>
+    </div>
+    <div class="verdict-card" id="verdictCard">
+      <h3 id="verdictTitle">&#128202; Our Recommendation</h3>
+      <p id="verdictText"></p>
+    </div>
+    <div class="comps-card">
+      <h3>Comparable Listings Used</h3>
+      <div id="compsList"></div>
+    </div>
+    <button class="btn-new" onclick="resetForm()">&#8592; Analyze Another Property</button>
+  </div>
+</main>
+<script>
+  async function getEstimate() {
+    const address = document.getElementById('address').value.trim();
+    if (!address) { showError('Please enter a full address to get started.'); return; }
+    const bedrooms = document.getElementById('bedrooms').value;
+    const bathrooms = document.getElementById('bathrooms').value;
+    const propertyType = document.getElementById('propertyType').value;
+    const sqft = document.getElementById('sqft').value;
+    const currentRent = parseFloat(document.getElementById('currentRent').value) || null;
+    setLoading(true); hideError(); hideResults();
+    try {
+      const res = await fetch('/api/estimate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ address, bedrooms, bathrooms, propertyType, squareFootage: sqft }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong. Please check the address and try again.');
+      renderResults(data, address, currentRent);
+    } catch (err) { showError(err.message); } finally { setLoading(false); }
+  }
+  function renderResults(data, address, currentRent) {
+    const rent = Math.round(data.rent || 0);
+    const rentLow = Math.round(data.rentRangeLow || rent * 0.9);
+    const rentHigh = Math.round(data.rentRangeHigh || rent * 1.1);
+    const comps = data.comparables || [];
+    document.getElementById('reportAddress').textContent = '\u{1F4CD} ' + address;
+    document.getElementById('reportRent').textContent = fmt(rent);
+    document.getElementById('reportComps').textContent = comps.length;
+    if (currentRent && currentRent > 0) {
+      const diff = rent - currentRent; const annual = diff * 12;
+      document.getElementById('upsideBlock').style.display = '';
+      document.getElementById('reportUpside').textContent = (diff >= 0 ? '+' : '') + fmt(diff) + '/mo';
+      if (diff > 0) {
+        document.getElementById('upsideBar').style.display = '';
+        document.getElementById('upsideBarText').textContent = '+' + fmt(diff) + '/month upside \u00B7 ' + fmt(annual) + '/year';
+        document.getElementById('upsideBarSub').textContent = 'Based on ' + comps.length + ' comparable listings nearby';
+      }
+    } else { document.getElementById('upsideBlock').style.display = 'none'; }
+    document.getElementById('rangeLowVal').textContent = fmt(rentLow);
+    document.getElementById('rangeMidVal').textContent = fmt(rent);
+    document.getElementById('rangeHighVal').textContent = fmt(rentHigh);
+    document.getElementById('rangeLow').style.width = pct(rentLow, rentHigh) + '%';
+    document.getElementById('rangeMid').style.width = pct(rent, rentHigh) + '%';
+    document.getElementById('rangeHigh').style.width = '100%';
+    document.getElementById('verdictText').textContent = buildVerdict(rent, rentLow, rentHigh, currentRent, comps.length);
+    const list = document.getElementById('compsList');
+    list.innerHTML = '';
+    if (comps.length === 0) { list.innerHTML = '<p style="color:var(--muted);font-size:14px">No comparable listings found for this area.</p>'; }
+    else {
+      comps.slice(0, 8).forEach(c => {
+        const compRent = c.price || c.rent || 0; const diff = compRent - rent;
+        let badgeClass, badgeLabel;
+        if (diff > 50) { badgeClass = 'badge-above'; badgeLabel = 'Above estimate'; }
+        else if (diff < -50) { badgeClass = 'badge-below'; badgeLabel = 'Below estimate'; }
+        else { badgeClass = 'badge-match'; badgeLabel = 'Near estimate'; }
+        const beds = c.bedrooms != null ? c.bedrooms + 'bd' : '';
+        const baths = c.bathrooms != null ? c.bathrooms + 'ba' : '';
+        const sqft = c.squareFootage ? c.squareFootage.toLocaleString() + ' sqft' : '';
+        const meta = [beds, baths, sqft].filter(Boolean).join(' \u00B7 ');
+        const dist = c.distance != null ? (Math.round(c.distance * 10) / 10) + ' mi away' : '';
+        list.innerHTML += '<div class="comp-item"><div class="comp-left"><div class="comp-address">' + (c.formattedAddress || c.address || 'Nearby property') + '</div><div class="comp-meta">' + meta + '</div><span class="comp-badge ' + badgeClass + '">' + badgeLabel + '</span></div><div class="comp-right"><div class="comp-price">' + fmt(compRent) + '/mo</div><div class="comp-distance">' + dist + '</div></div></div>';
+      });
+    }
+    showResults();
+  }
+  function buildVerdict(rent, low, high, currentRent, compCount) {
+    const range = '$' + low.toLocaleString() + '\u2013$' + high.toLocaleString();
+    if (currentRent) {
+      const diff = rent - currentRent;
+      if (diff > 100) return 'Based on ' + compCount + ' comparable listings, the market supports ' + range + '/month for this property. You are currently charging $' + currentRent.toLocaleString() + ', which is $' + Math.round(diff) + ' below market rate. Consider raising rent at the next renewal.';
+      else if (diff < -100) return 'Based on ' + compCount + ' comparable listings, the market rate is ' + range + '/month. You are currently charging $' + currentRent.toLocaleString() + ', which is above market. Consider reviewing your pricing to avoid extended vacancy.';
+      else return 'Great news - your current rent of $' + currentRent.toLocaleString() + ' is well aligned with the market rate of ' + range + '/month. Based on ' + compCount + ' comparable listings, you are priced right.';
+    }
+    return 'Based on ' + compCount + ' comparable listings in this area, the market rate for this property is ' + range + '/month, with an estimate of $' + rent.toLocaleString() + '/month. Enter your current rent above to see your upside.';
+  }
+  function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
+  function pct(val, max) { return max > 0 ? Math.min(100, Math.round((val / max) * 100)) : 50; }
+  function setLoading(on) {
+    document.getElementById('loading').classList.toggle('visible', on);
+    document.getElementById('submitBtn').disabled = on;
+    document.getElementById('btnText').textContent = on ? 'Analyzing\u2026' : 'Get My Pricing Report \u2192';
+    document.getElementById('formCard').style.opacity = on ? '0.5' : '1';
+  }
+  function showError(msg) { const el = document.getElementById('errorBox'); el.textContent = '\u26A0\uFE0F ' + msg; el.classList.add('visible'); }
+  function hideError() { document.getElementById('errorBox').classList.remove('visible'); }
+  function showResults() { document.getElementById('results').classList.add('visible'); }
+  function hideResults() { document.getElementById('results').classList.remove('visible'); }
+  function resetForm() { hideResults(); hideError(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.activeElement.tagName === 'INPUT') getEstimate(); });
+</script>
+</body>
+</html>
